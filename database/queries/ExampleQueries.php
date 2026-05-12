@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Consultas Eloquent de ejemplo — Laboratorio 7 ORM
- * Dominio: Plataforma de Gestión de Fútbol
+ * Consultas Eloquent de ejemplo - Laboratorio 7 ORM
+ * Dominio: Plataforma de Gestion de Futbol
  *
  * Para ejecutar desde Tinker:
  *   docker compose exec app php artisan tinker
@@ -15,22 +15,22 @@ use App\Models\League;
 use App\Models\Player;
 use App\Models\Transfer;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSULTA 1 — Eager Loading (previene el problema N+1)
+// -----------------------------------------------------------------------------
+// CONSULTA 1 - Eager Loading (previene el problema N+1)
 //
-// Se usa with() porque, sin él, por cada partido se lanzaría una query para
+// Se usa with() porque, sin el, por cada partido se lanzaria una query para
 // homeClub, una para awayClub y otra para cada gol + su scorer. Con Eager
 // Loading, Eloquent resuelve todo en 4 queries en lugar de O(n*m), sin importar
-// cuántos partidos y goles haya.
-// ─────────────────────────────────────────────────────────────────────────────
+// cuantos partidos y goles haya.
+// -----------------------------------------------------------------------------
 
 $seasonId = 1; // Cambia al ID de temporada que quieras explorar
 
 $partidos = Fixture::with([
         'homeClub',
         'awayClub',
-        'goals.scorer',     // goles con su goleador (relación anidada)
-        'bookings.player',  // tarjetas con el jugador amonestado
+        'goals.scorer',
+        'bookings.player',
     ])
     ->where('season_id', $seasonId)
     ->where('status', 'played')
@@ -38,22 +38,22 @@ $partidos = Fixture::with([
     ->take(10)
     ->get();
 
-echo "=== Consulta 1: Últimos 10 partidos jugados de la temporada {$seasonId} ===\n";
+echo "=== Consulta 1: Ultimos 10 partidos jugados de la temporada {$seasonId} ===\n";
 foreach ($partidos as $f) {
     $score = "{$f->home_score} - {$f->away_score}";
     echo "  [{$f->played_at?->format('d/m/Y')}] {$f->homeClub->name} {$score} {$f->awayClub->name}\n";
     foreach ($f->goals as $goal) {
-        echo "    ⚽ min.{$goal->minute} — {$goal->scorer->first_name} {$goal->scorer->last_name} ({$goal->type})\n";
+        echo "    [GOAL] min.{$goal->minute} - {$goal->scorer->first_name} {$goal->scorer->last_name} ({$goal->type})\n";
     }
 }
 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSULTA 2 — Top 10 goleadores con su club y país
+// -----------------------------------------------------------------------------
+// CONSULTA 2 - Top 10 goleadores con su club y pais
 //
 // withCount() agrega goals_count sin cargar los registros. Se encadena
 // with() para traer las relaciones necesarias en pantalla.
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 $topGoleadores = Player::withCount('goals')
     ->with(['club', 'country'])
@@ -76,12 +76,12 @@ foreach ($topGoleadores as $i => $player) {
 }
 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSULTA 3 — Ligas con sus clubes, filtradas por continente
+// -----------------------------------------------------------------------------
+// CONSULTA 3 - Ligas con sus clubes, filtradas por continente
 //
-// Relación anidada country → leagues → clubs. Se usa whereHas para filtrar
-// ligas cuyo país esté en un continente específico.
-// ─────────────────────────────────────────────────────────────────────────────
+// Relacion anidada country -> leagues -> clubs. Se usa whereHas para filtrar
+// ligas cuyo pais este en un continente especifico.
+// -----------------------------------------------------------------------------
 
 $ligasEuropa = League::with(['country', 'clubs'])
     ->withCount('clubs')
@@ -90,7 +90,7 @@ $ligasEuropa = League::with(['country', 'clubs'])
     ->orderBy('clubs_count', 'desc')
     ->get();
 
-echo "\n=== Consulta 3: Ligas de primera división en Europa ===\n";
+echo "\n=== Consulta 3: Ligas de primera division en Europa ===\n";
 foreach ($ligasEuropa as $liga) {
     echo sprintf(
         "  %-30s | %-5s | %d clubes\n",
@@ -101,12 +101,12 @@ foreach ($ligasEuropa as $liga) {
 }
 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSULTA 4 — Transferencias millonarias (>50M) con jugador, origen y destino
+// -----------------------------------------------------------------------------
+// CONSULTA 4 - Transferencias millonarias (>50M) con jugador, origen y destino
 //
 // Filtra por transfer_fee_millions y tipo, ordena descendente.
 // Eager Loading en player + fromClub + toClub para evitar N+1.
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 $transferenciasBig = Transfer::with(['player.country', 'fromClub', 'toClub'])
     ->where('transfer_fee_millions', '>=', 50)
@@ -115,12 +115,12 @@ $transferenciasBig = Transfer::with(['player.country', 'fromClub', 'toClub'])
     ->take(15)
     ->get();
 
-echo "\n=== Consulta 4: Transferencias permanentes ≥50 M de euros ===\n";
+echo "\n=== Consulta 4: Transferencias permanentes >= 50M de euros ===\n";
 foreach ($transferenciasBig as $t) {
     $desde = $t->fromClub?->name ?? 'Libre';
     $hacia = $t->toClub?->name   ?? 'Libre';
     echo sprintf(
-        "  %-25s | %-20s → %-20s | %.1fM | %s\n",
+        "  %-25s | %-20s -> %-20s | %.1fM | %s\n",
         "{$t->player->first_name} {$t->player->last_name}",
         $desde,
         $hacia,
@@ -130,12 +130,12 @@ foreach ($transferenciasBig as $t) {
 }
 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSULTA 5 — Clubes con más de 20 jugadores de valor > 10 M, ordenados
+// -----------------------------------------------------------------------------
+// CONSULTA 5 - Clubes con mas jugadores de valor > 10M, ordenados
 //
-// whereHas filtra clubes que cumplan la condición en sus jugadores.
-// withCount aplica la misma condición para mostrar el conteo.
-// ─────────────────────────────────────────────────────────────────────────────
+// whereHas filtra clubes que cumplan la condicion en sus jugadores.
+// withCount aplica la misma condicion para mostrar el conteo.
+// -----------------------------------------------------------------------------
 
 $clubesRicos = Club::withCount([
         'players as jugadores_valiosos' => fn ($q) => $q
@@ -147,7 +147,7 @@ $clubesRicos = Club::withCount([
     ->orderBy('jugadores_valiosos', 'desc')
     ->get();
 
-echo "\n=== Consulta 5: Clubes con más jugadores de valor ≥10 M ===\n";
+echo "\n=== Consulta 5: Clubes con mas jugadores de valor >= 10M ===\n";
 foreach ($clubesRicos as $club) {
     echo sprintf(
         "  %-28s | %-20s | %d jugadores valiosos\n",
@@ -158,12 +158,12 @@ foreach ($clubesRicos as $club) {
 }
 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSULTA 6 — Partidos con más goles en una temporada (alta intensidad)
+// -----------------------------------------------------------------------------
+// CONSULTA 6 - Partidos con mas goles (alta intensidad)
 //
 // withCount('goals') para sumar goles sin cargar todos los registros.
-// Eager Loading de homeClub y awayClub. Filtro por temporada y status.
-// ─────────────────────────────────────────────────────────────────────────────
+// Eager Loading de homeClub y awayClub. Filtro por status played.
+// -----------------------------------------------------------------------------
 
 $partidosMasGoles = Fixture::withCount('goals')
     ->with(['homeClub', 'awayClub', 'season.league'])
@@ -172,7 +172,7 @@ $partidosMasGoles = Fixture::withCount('goals')
     ->take(10)
     ->get();
 
-echo "\n=== Consulta 6: Los 10 partidos con más goles ===\n";
+echo "\n=== Consulta 6: Los 10 partidos con mas goles ===\n";
 foreach ($partidosMasGoles as $f) {
     echo sprintf(
         "  %-20s %d-%d %-20s | %d goles | %s\n",

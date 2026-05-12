@@ -11,7 +11,7 @@ class ManagerSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = Faker::create('es_ES');
+        $faker = Faker::create('en_US');
         $now   = Carbon::now();
         $tactics = ['4-3-3', '4-4-2', '4-2-3-1', '3-5-2', '3-4-3', '5-3-2'];
 

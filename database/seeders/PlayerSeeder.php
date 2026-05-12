@@ -11,7 +11,7 @@ class PlayerSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = Faker::create('es_ES');
+        $faker = Faker::create('en_US');
         $now   = Carbon::now();
 
         $clubIds    = DB::table('clubs')->pluck('id')->toArray();
