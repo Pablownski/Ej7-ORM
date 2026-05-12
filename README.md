@@ -49,6 +49,29 @@ Modelado de una **plataforma de gestión de fútbol** usando **Laravel 11** y **
 
 ---
 
+## Credenciales de la base de datos
+
+El archivo `.env` **no está incluido en el repositorio** (está en `.gitignore`).
+
+Docker usa los siguientes valores por defecto para desarrollo local. Para cambiarlos, define las variables de entorno en tu shell **antes** de correr `docker compose up`:
+
+| Variable | Valor por defecto (Docker) |
+|---|---|
+| `DB_DATABASE` | `football_manager` |
+| `DB_USERNAME` | `dbuser` |
+| `DB_PASSWORD` | `changeme` |
+| `DB_ROOT_PASSWORD` | `rootchangeme` |
+
+Ejemplo para sobrescribir antes de levantar:
+
+```bash
+export DB_PASSWORD=mi_password_seguro
+export DB_ROOT_PASSWORD=mi_root_seguro
+docker compose up --build
+```
+
+---
+
 ## Instalacion con Docker (forma mas rapida)
 
 ```bash
@@ -56,13 +79,13 @@ Modelado de una **plataforma de gestión de fútbol** usando **Laravel 11** y **
 git clone <url-del-repo>
 cd Ej7-ORM
 
-# 2. Construir y levantar los servicios (MySQL + app Laravel)
+# 2. Levantar los servicios — el contenedor genera el .env automaticamente
 docker compose up --build
 ```
 
 El contenedor de la app automaticamente:
-1. Copia `.env.example` a `.env` y genera la `APP_KEY`
-2. Espera a que MySQL este listo
+1. Genera el `.env` interno con las variables de entorno del contenedor
+2. Genera la `APP_KEY`
 3. Ejecuta `php artisan migrate` (crea las 10 tablas)
 4. Ejecuta `php artisan db:seed` (siembra ~14 500 registros)
 5. Levanta el servidor en **http://localhost:8000**
@@ -90,7 +113,7 @@ docker compose exec app php artisan migrate:fresh --seed
 
 composer install
 cp .env.example .env
-# Editar .env: cambiar DB_HOST=127.0.0.1 y ajustar credenciales
+# Editar .env: completar DB_HOST=127.0.0.1 y el resto de credenciales
 
 php artisan key:generate
 php artisan migrate
