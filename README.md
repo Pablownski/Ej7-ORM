@@ -123,20 +123,54 @@ php artisan serve
 
 ---
 
+## Verificacion rapida
+
+```bash
+# 1. Confirmar que la app responde
+# Abrir en el navegador: http://localhost:8000
+# Debe devolver: {"app":"Football Manager ORM","status":"ok"}
+
+# 2. Verificar que las 10 migraciones corrieron
+docker compose exec app php artisan migrate:status
+
+# 3. Contar registros en las tablas principales
+docker compose exec app php artisan tinker --execute="
+  echo 'Paises:       ' . App\Models\Country::count() . PHP_EOL;
+  echo 'Ligas:        ' . App\Models\League::count() . PHP_EOL;
+  echo 'Clubes:       ' . App\Models\Club::count() . PHP_EOL;
+  echo 'Jugadores:    ' . App\Models\Player::count() . PHP_EOL;
+  echo 'Partidos:     ' . App\Models\Fixture::count() . PHP_EOL;
+  echo 'Goles:        ' . App\Models\Goal::count() . PHP_EOL;
+  echo 'Transferencias:' . App\Models\Transfer::count() . PHP_EOL;
+"
+```
+
+---
+
 ## Ejecutar las consultas Eloquent
 
 ```bash
-# Con Docker
+# Abrir Tinker
 docker compose exec app php artisan tinker
-
-# Sin Docker
-php artisan tinker
 ```
 
 Dentro de Tinker:
 
 ```php
+// Correr las 6 consultas del laboratorio
 require 'database/queries/ExampleQueries.php';
+
+// Consultas rapidas de ejemplo
+App\Models\Player::with(['club','country'])->first();
+
+App\Models\Player::withCount('goals')
+    ->orderBy('goals_count','desc')
+    ->take(5)
+    ->get(['first_name','last_name','goals_count']);
+
+App\Models\Fixture::with(['homeClub','awayClub','goals.scorer'])
+    ->where('status','played')
+    ->first();
 ```
 
 ---
