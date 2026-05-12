@@ -86,9 +86,8 @@ docker compose up --build
 El contenedor de la app automaticamente:
 1. Genera el `.env` interno con las variables de entorno del contenedor
 2. Genera la `APP_KEY`
-3. Ejecuta `php artisan migrate` (crea las 10 tablas)
-4. Ejecuta `php artisan db:seed` (siembra ~14 500 registros)
-5. Levanta el servidor en **http://localhost:8000**
+3. Ejecuta `php artisan migrate:fresh --seed` (crea las 10 tablas y siembra ~14 500 registros)
+4. Levanta el servidor en **http://localhost:8000**
 
 > El seed puede tardar 2-4 minutos por el volumen de datos.
 
